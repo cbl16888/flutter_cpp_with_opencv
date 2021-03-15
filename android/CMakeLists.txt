@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.4.1)
 
 # TODO please change me!
-set(OPENCV_BASE_DIR "/Users/tom/Others/OpenCVRelease/OpenCV-android-sdk")
+set(OPENCV_BASE_DIR "/Users/ChenBerlin/Documents/GitHubKit/OpenCV-android-sdk")
 
 set(OPENCV_INCLUDE_DIR "${OPENCV_BASE_DIR}/sdk/native/jni/include/")
 set(OPENCV_STATIC_LIB_DIR "${OPENCV_BASE_DIR}/sdk/native/staticlibs/${ANDROID_ABI}")
@@ -66,8 +66,8 @@ set_target_properties(tbb PROPERTIES IMPORTED_LOCATION ${OPENCV_3RDPARTY_STATIC_
 add_library(tegra_hal STATIC IMPORTED)
 set_target_properties(tegra_hal PROPERTIES IMPORTED_LOCATION ${OPENCV_3RDPARTY_STATIC_LIB_DIR}/libtegra_hal.a)
 
-add_library(ittnotify STATIC IMPORTED)
-set_target_properties(ittnotify PROPERTIES IMPORTED_LOCATION ${OPENCV_3RDPARTY_STATIC_LIB_DIR}/libittnotify.a)
+#add_library(ittnotify STATIC IMPORTED)
+#set_target_properties(ittnotify PROPERTIES IMPORTED_LOCATION ${OPENCV_3RDPARTY_STATIC_LIB_DIR}/libittnotify.a)
 
 add_library(native_with_opencv
 
@@ -83,7 +83,7 @@ target_link_libraries(native_with_opencv
         core
         tbb # note: need to be placed *after* "core"
         cpufeatures
-        ittnotify
+        # ittnotify
         tegra_hal # NOTE if still have error, check abiFilters, since tegra does *not* exist in x86.
         Threads::Threads
         -lz
