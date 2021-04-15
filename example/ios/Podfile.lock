@@ -4,8 +4,8 @@ PODS:
     - Flutter
   - native_with_opencv (0.0.1):
     - Flutter
-    - OpenCV (~> 4.1)
-  - OpenCV (4.1.0)
+    - OpenCV (= 3.4.1)
+  - OpenCV (3.4.1)
   - path_provider (0.0.1):
     - Flutter
 
@@ -32,8 +32,8 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
   image_picker: 9c3312491f862b28d21ecd8fdf0ee14e601b3f09
-  native_with_opencv: cc137d7870512b384cf7796a06f369b9eb574a2d
-  OpenCV: 52cd4d72ff29e2be83421477aec5447320b7fb19
+  native_with_opencv: fd111b4b38421c0f7fbc7b8b833baa1d702406f3
+  OpenCV: 533d4b33a02bd225c49838901db2a1ddb6efe6b1
   path_provider: abfe2b5c733d04e238b0d8691db0cfd63a27a93c
 
 PODFILE CHECKSUM: aafe91acc616949ddb318b77800a7f51bffa2a4c

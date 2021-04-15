@@ -25,10 +25,14 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
 android {
+    ndkVersion '21.0.6113669'
     compileSdkVersion 28
 
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
+        main {
+            jniLibs.srcDirs = [ 'libs','src/main/nativeLibs']  // libs
+        }
     }
     defaultConfig {
         minSdkVersion 21
