@@ -122,11 +122,9 @@ const char* version() {
 }
 
 __attribute__((visibility("default"))) __attribute__((used))
-void process_image(char* image_url, int* output_result) {
+int32_t process_image(char* image_url) {
 
-    Mat input = imread(image_url, IMREAD_GRAYSCALE);
-    IplImage temp = (IplImage)input;
-    IplImage *image_original = &temp;
+    IplImage* image_original = cvLoadImage(image_url);
 
     //缩放图片
     IplImage* image;
@@ -137,7 +135,7 @@ void process_image(char* image_url, int* output_result) {
     if (orginal_image_width < 200) {
         int return_value = -2;
         printf("-2 图片不清晰，请重拍");
-        *output_result = return_value;
+        return return_value;
     }
     //缩放的倍数
     double scale = 0.3; // double(200 / orginal_image_width);
@@ -149,8 +147,9 @@ void process_image(char* image_url, int* output_result) {
 
     if (image == NULL) {    //open image error
         printf("打开图像文件失败!");
-        *output_result = -1;
+        return -1;
     }
+    return 10;
     IplImage* image1 = cvCreateImage(cvSize(image->width, image->height), image->depth, image->nChannels);  //注意图像必须和输入图像的size，颜色位深度，通道一致
     cvZero(image1); //清空image_data数据
     cvCvtColor(image, image1, CV_BGR2HSV);//CV_BGR2HSV
@@ -504,7 +503,7 @@ void process_image(char* image_url, int* output_result) {
         printf("-1 存在多个相似块");
     }
     free(HSV_Arr);
-    *output_result = return_value;
+    return return_value;
 }
 }
 

@@ -1,14 +1,15 @@
 import 'dart:ffi';// For FFI
 import 'dart:io'; // For Platform.isX
 import 'package:ffi/ffi.dart';
+import 'dart:isolate';
 
 // C function signatures
 typedef _version_func = Pointer<Utf8> Function();
-typedef _process_image_func = Void Function(Pointer<Utf8>, Pointer<Utf8>);
+typedef _process_image_func = Int32 Function(Pointer<Utf8>);
 
 // Dart function signatures
 typedef _VersionFunc = Pointer<Utf8> Function();
-typedef _ProcessImageFunc = void Function(Pointer<Utf8>, Pointer<Utf8>);
+typedef _ProcessImageFunc = int Function(Pointer<Utf8>);
 
 final DynamicLibrary nativeAddLib =
 Platform.isAndroid ? DynamicLibrary.open("libnative_with_opencv.so") : DynamicLibrary.process();
@@ -27,13 +28,27 @@ String opencvVersion() {
     return Utf8.fromUtf8(_version());
 }
 
-void processImage(ProcessImageArguments args) {
-    _processImage(Utf8.toUtf8(args.inputPath), Utf8.toUtf8(args.outputPath));
+int processImage(ProcessImageArguments args) {
+    var result = _processImage(Utf8.toUtf8(args.inputPath));
+    args.port.send(result);
+    return result;
 }
 
 class ProcessImageArguments {
     final String inputPath;
-    final String outputPath;
-
-    ProcessImageArguments(this.inputPath, this.outputPath);
+    final SendPort port;
+    ProcessImageArguments(this.inputPath, this.port);
 }
+
+/*
+
+sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+        main {
+            jniLibs.srcDirs = [ 'libs','src/main/nativeLibs']  // libs
+        }
+    }
+    如果报*.so文件重复,注释sourceSets里面的main {
+            jniLibs.srcDirs = [ 'libs','src/main/nativeLibs']  // libs
+        }
+ */
