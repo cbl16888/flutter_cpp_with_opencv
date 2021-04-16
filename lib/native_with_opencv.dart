@@ -41,6 +41,7 @@ class ProcessImageArguments {
 }
 
 /*
+iOS 需要拷贝一份native_add.cpp到iOS独立项目里面
 
 sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
