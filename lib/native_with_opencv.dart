@@ -23,24 +23,36 @@ final _VersionFunc _version = nativeAddLib
 final _ProcessImageFunc _processImage = nativeAddLib
     .lookup<NativeFunction<_process_image_func>>('process_image')
     .asFunction();
+final _ProcessImageFunc _processSemiQuanImage = nativeAddLib
+    .lookup<NativeFunction<_process_image_func>>('process_semi_quan_image')
+    .asFunction();
 
 String opencvVersion() {
     return Utf8.fromUtf8(_version());
 }
 
 int processImage(ProcessImageArguments args) {
-    var result = _processImage(Utf8.toUtf8(args.inputPath));
-    args.port.send(result);
-    return result;
+    if (args.type == 0) {
+        var result = _processImage(Utf8.toUtf8(args.inputPath));
+        return result;
+    } else {
+        var result = _processSemiQuanImage(Utf8.toUtf8(args.inputPath));
+        return result;
+    }
 }
 
 class ProcessImageArguments {
     final String inputPath;
-    final SendPort port;
-    ProcessImageArguments(this.inputPath, this.port);
+    final int type;
+    ProcessImageArguments(this.inputPath, this.type);
 }
 
 /*
+iOS 需要修改一下配置
+When creating a release archive (IPA) the symbols are stripped by Xcode.
+1. In Xcode, go to **Target Runner > Build Settings > Strip Style**.
+2. Change from **All Symbols** to **Non-Global Symbols**.
+
 iOS 需要拷贝一份native_add.cpp到iOS独立项目里面
 
 sourceSets {
