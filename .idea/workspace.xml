@@ -2,7 +2,14 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="49cfa524-b434-4504-bcc8-86153bcacf7d" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/example/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/main.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/example/ios/.symlinks/plugins/native_with_opencv/.idea/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/example/ios/.symlinks/plugins/native_with_opencv/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/ios/.symlinks/plugins/native_with_opencv/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/example/ios/.symlinks/plugins/native_with_opencv/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/ios/.symlinks/plugins/native_with_opencv/ios/Classes/native_add.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/example/ios/.symlinks/plugins/native_with_opencv/ios/Classes/native_add.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ios/Classes/native_add.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/ios/Classes/native_add.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -11,6 +18,9 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitToolBoxStore">
+    <option name="projectConfigVersion" value="2" />
   </component>
   <component name="ProjectId" id="1psF2Trh7ww0KkYmySvggDgCmUR" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
@@ -48,21 +58,21 @@
     <servers />
   </component>
   <component name="WindowStateProjectService">
-    <state width="1386" height="3" key="GridCell.Tab.0.bottom" timestamp="1618485125489">
+    <state width="1386" height="476" key="GridCell.Tab.0.bottom" timestamp="1620900486903">
       <screen x="0" y="25" width="1440" height="821" />
     </state>
-    <state width="1386" height="3" key="GridCell.Tab.0.bottom/0.25.1440.821/1440.-45.1920.1055@0.25.1440.821" timestamp="1618485125489" />
-    <state width="1386" height="3" key="GridCell.Tab.0.center" timestamp="1618485125488">
+    <state width="1386" height="476" key="GridCell.Tab.0.bottom/0.25.1440.821/1440.-45.1920.1055@0.25.1440.821" timestamp="1620900486903" />
+    <state width="1386" height="476" key="GridCell.Tab.0.center" timestamp="1620900486903">
       <screen x="0" y="25" width="1440" height="821" />
     </state>
-    <state width="1386" height="3" key="GridCell.Tab.0.center/0.25.1440.821/1440.-45.1920.1055@0.25.1440.821" timestamp="1618485125488" />
-    <state width="1386" height="3" key="GridCell.Tab.0.left" timestamp="1618485125488">
+    <state width="1386" height="476" key="GridCell.Tab.0.center/0.25.1440.821/1440.-45.1920.1055@0.25.1440.821" timestamp="1620900486903" />
+    <state width="1386" height="476" key="GridCell.Tab.0.left" timestamp="1620900486902">
       <screen x="0" y="25" width="1440" height="821" />
     </state>
-    <state width="1386" height="3" key="GridCell.Tab.0.left/0.25.1440.821/1440.-45.1920.1055@0.25.1440.821" timestamp="1618485125488" />
-    <state width="1386" height="3" key="GridCell.Tab.0.right" timestamp="1618485125489">
+    <state width="1386" height="476" key="GridCell.Tab.0.left/0.25.1440.821/1440.-45.1920.1055@0.25.1440.821" timestamp="1620900486902" />
+    <state width="1386" height="476" key="GridCell.Tab.0.right" timestamp="1620900486903">
       <screen x="0" y="25" width="1440" height="821" />
     </state>
-    <state width="1386" height="3" key="GridCell.Tab.0.right/0.25.1440.821/1440.-45.1920.1055@0.25.1440.821" timestamp="1618485125489" />
+    <state width="1386" height="476" key="GridCell.Tab.0.right/0.25.1440.821/1440.-45.1920.1055@0.25.1440.821" timestamp="1620900486903" />
   </component>
 </project>
