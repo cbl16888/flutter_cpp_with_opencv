@@ -138,9 +138,11 @@ bool checkVecValidBySemiQuan(vector<vector<int>> vec, int*** oneHotMatrix) {
 			WidthMax = vec[i][1];
 		}
 	}
-	if (oneCount > (vec.size() / 2)) {
+	if (oneCount > (vec.size() / 10)) {
 		//如果长宽比>10 也视为不规范
-		if ((WidthMax - vec[0][1]) < (10 * (heightMax - vec[0][0]))) {
+		int colNum = WidthMax - vec[0][1];
+		int rowNum = heightMax - vec[0][0];
+		if (2 * colNum < rowNum) {
 			return true;
 		}
 		else {
@@ -311,7 +313,7 @@ static double angle(Point pt1, Point pt2, Point pt0)
 //第一个参数是传入的原始图像，第二是输出的图像。
 void findSquares(const Mat& image, Mat& out)
 {
-	int threshold1 = 60, threshold2 = 180, N = 5;
+	int threshold1 = 10, threshold2 = 180, N = 5;
 	vector<vector<Point>> squares;
 	squares.clear();
 	Mat src, dst, gray_one, gray;
@@ -322,6 +324,7 @@ void findSquares(const Mat& image, Mat& out)
 	gray_one = Mat(src.size(), CV_8U);
 	//滤波增强边缘检测
 	medianBlur(src, dst, 1);
+
 	vector<vector<Point> > contours;
 	vector<Vec4i> hierarchy;
 	//在图像的每个颜色通道中查找矩形
@@ -335,18 +338,8 @@ void findSquares(const Mat& image, Mat& out)
 			if (l == 0) {
 				//检测边缘
 				Canny(gray_one, gray, threshold1, threshold2);
-
-				////运行Sobel算子
-				//Mat xdst, ydst;
-				//Sobel(gray_one, xdst, CV_64F, 1, 0);
-				//Sobel(gray_one, ydst, CV_64F, 0, 1);
-				//subtract(xdst, ydst, gray);
-				//convertScaleAbs(ydst, gray);
-				//threshold(gray, gray, 0, 255, THRESH_OTSU); //OTSU自适应
-
 				//膨脹
 				dilate(gray, gray, Mat(), Point(-1, -1));
-				//imshow("dilate", gray);
 			}
 			else {
 				gray = gray_one >= (l + 1) * 255 / N;
@@ -355,7 +348,6 @@ void findSquares(const Mat& image, Mat& out)
 			// 轮廓查找
 			//findContours(gray, contours, RETR_CCOMP, CHAIN_APPROX_SIMPLE);
 			findContours(gray, contours, hierarchy, RETR_CCOMP, CHAIN_APPROX_SIMPLE);
-
 			vector<Point> approx;
 
 			// 检测所找到的轮廓
@@ -364,7 +356,7 @@ void findSquares(const Mat& image, Mat& out)
 				//使用图像轮廓点进行多边形拟合
 				approxPolyDP(Mat(contours[i]), approx, arcLength(Mat(contours[i]), true) * 0.02, true);
 				//计算轮廓面积后，得到矩形4个顶点
-				if (approx.size() == 4 && fabs(contourArea(Mat(approx))) > 50 && isContourConvex(Mat(approx)))
+				if (approx.size() == 4 && fabs(contourArea(Mat(approx))) >50 && isContourConvex(Mat(approx)))
 				{
 					double maxCosine = 0;
 					for (int j = 2; j < 5; j++) {
@@ -375,15 +367,59 @@ void findSquares(const Mat& image, Mat& out)
 					if (maxCosine < 0.3
 						&& (
 						approx[0].x > (imageWidth * 0.4) && approx[0].x < (imageWidth * 0.7) &&
-						approx[1].x >(imageWidth * 0.4) && approx[1].x < (imageWidth * 0.7) &&
-						approx[2].x >(imageWidth * 0.4) && approx[2].x < (imageWidth * 0.7) &&
-						approx[3].x >(imageWidth * 0.4) && approx[3].x < (imageWidth * 0.7) &&
-						approx[0].y >(imageHeight * 0.25) && approx[0].y < (imageHeight * 0.8) &&
-						approx[1].y >(imageHeight * 0.25) && approx[1].y < (imageHeight * 0.8) &&
-						approx[2].y >(imageHeight * 0.25) && approx[2].y < (imageHeight * 0.8) &&
-						approx[3].y >(imageHeight * 0.25) && approx[3].y < (imageHeight * 0.8)
+						approx[1].x > (imageWidth * 0.4) && approx[1].x < (imageWidth * 0.7) &&
+						approx[2].x > (imageWidth * 0.4) && approx[2].x < (imageWidth * 0.7) &&
+						approx[3].x > (imageWidth * 0.4) && approx[3].x < (imageWidth * 0.7) &&
+						approx[0].y > (imageHeight * 0.3) && approx[0].y < (imageHeight * 0.8) &&
+						approx[1].y > (imageHeight * 0.3) && approx[1].y < (imageHeight * 0.8) &&
+						approx[2].y > (imageHeight * 0.3) && approx[2].y < (imageHeight * 0.8) &&
+						approx[3].y > (imageHeight * 0.3) && approx[3].y < (imageHeight * 0.8)
 						)
 						) {
+						//获取到矩阵块的宽高
+						float blockWidth = abs(retmax(approx[0].x, approx[1].x, approx[2].x)- retmin(approx[0].x, approx[1].x, approx[2].x));
+						float blockHeight = abs(retmax(approx[0].y, approx[1].y, approx[2].y) - retmin(approx[0].y, approx[1].y, approx[2].y));
+						float blockAvgX = (retmax(approx[0].x, approx[1].x, approx[2].x) + retmin(approx[0].x, approx[1].x, approx[2].x)) / 2;
+						float blockAvgY = (retmax(approx[0].y, approx[1].y, approx[2].y) + retmin(approx[0].y, approx[1].y, approx[2].y)) / 2;
+						for (size_t t = 0; t < 4; t++)
+						{
+							if (approx[t].x >= blockAvgX) {
+								if (approx[t].x + blockWidth<imageWidth)
+								{
+									approx[t].x = approx[t].x + blockWidth;
+								}
+								else {
+									approx[t].x = imageWidth;
+								}
+							}
+							if (approx[t].x < blockAvgX) {
+								if (approx[t].x - blockWidth>0)
+								{
+									approx[t].x = approx[t].x - blockWidth;
+								}
+								else {
+									approx[t].x = 0;
+								}
+							}
+							if (approx[t].y >= blockAvgY) {
+								if (approx[t].y + blockHeight/2 < imageHeight)
+								{
+									approx[t].y = approx[t].y + blockHeight/2;
+								}
+								else {
+									approx[t].y = imageHeight;
+								}
+							}
+							if (approx[t].y < blockAvgY) {
+								if (approx[t].y - blockHeight/2 > 0)
+								{
+									approx[t].y = approx[t].y - blockHeight;
+								}
+								else {
+									approx[t].y = 0;
+								}
+							}
+						}
 						squares.push_back(approx);
 					}
 				}
@@ -445,6 +481,22 @@ void findSquares(const Mat& image, Mat& out)
 	}
 
 }
+
+//判断是否相交
+bool checkIsIntersect(vector<int> vec1, vector<int> vec2)
+{
+	if ((vec1[0] <= vec2[0] && vec1[1] >= vec2[0] && vec1[1] <= vec2[1]) ||
+		(vec1[0] >= vec2[0] && vec1[0] <= vec2[1] && vec1[1] >= vec2[1]) ||
+		(vec1[0] <= vec2[0] && vec1[1] >= vec2[1]) ||
+		(vec1[0] >= vec2[0] && vec1[0] <= vec2[1] && vec1[1] <= vec2[1]) ||
+		vec1[0] == vec2[0] || vec1[1] == vec2[0] || vec1[0] == vec2[0] || vec1[1] == vec2[1]) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
 
 
 
@@ -1126,17 +1178,31 @@ extern "C" {
 
 
 
+
 	__attribute__((visibility("default"))) __attribute__((used))
 	int process_semi_quan_image(char* fileUrl) {
 		try {
-
 			IplImage* imageOriginal = cvLoadImage(fileUrl);
 			Mat image = cvarrToMat(imageOriginal);
 			Mat imageROI;//感兴趣区域图像
 			findSquares(image, imageROI);
 			int returnValue = -1; //返回值
-			/*imshow("imageROI", imageROI);
-			waitKey();*/
+			// 颜色均衡化
+			//Mat ycrcb;
+			//cvtColor(imageROI, ycrcb, COLOR_BGR2YCrCb);
+			//vector<Mat> channels;
+			//split(ycrcb, channels);
+			//equalizeHist(channels[0], channels[0]);
+			//merge(channels, ycrcb);
+			//cvtColor(ycrcb, ycrcb, COLOR_YCrCb2BGR);
+			//imshow("颜色均衡化", ycrcb);
+
+
+
+			imshow("感兴趣区域", imageROI);
+			waitKey();
+
+
 			CvScalar scalar;
 			//获取二维的HSV矩阵
 			int imageHeight = imageROI.rows;
@@ -1177,7 +1243,7 @@ extern "C" {
 				oneHotMatrix[i] = oneHotLine;
 				for (int j = 0; j < imageWidth; j++) {
 					int* oneHot = (int*)malloc(sizeof(int));
-					if (((HSVArr[i][j]->H >= 0 and HSVArr[i][j]->H <= 60) or (HSVArr[i][j]->H >= 300 and HSVArr[i][j]->H <= 360)) and HSVArr[i][j]->S >= 0.1 and HSVArr[i][j]->V >= 0.3) {
+					if (((HSVArr[i][j]->H >= 0 and HSVArr[i][j]->H <= 60) or (HSVArr[i][j]->H >= 300 and HSVArr[i][j]->H <= 360)) and HSVArr[i][j]->S >= 0.09 and HSVArr[i][j]->V >= 0.3) {
 						*oneHot = 1;
 					}
 					else {
@@ -1188,6 +1254,142 @@ extern "C" {
 			}
 			//drawImg(imageHeight, imageWidth, oneHotMatrix);
 
+			//开始从左到右扫描 每隔两个像素点间隔计算rgb中r值的差值 记录下所有的阶跃点 并组成集合
+			int jumpRValue = 0;
+			vector<int> jumpPointLeft;
+			vector<int> jumpPointRight;
+			int jumpValue = 0;
+			for (int i = imageWidth - 3; i>0 ; i=i-2)
+			{
+				int r1 = 0;
+				int r2 = 0;
+				for (int j = imageHeight*0.45; j < imageHeight * 0.55; j++)
+				{
+					r1 = r1+ imageROI.at<Vec3b>(j, i)[2];
+					r2 = r2 + imageROI.at<Vec3b>(j, i + 2)[2];
+				}
+				r1 = r1 / (int)(imageHeight * 0.55 - imageHeight * 0.45);
+				r2 = r2 / (int)(imageHeight * 0.55 - imageHeight * 0.45);
+
+				if ((r1 < 10 || r1>250)||(r2 < 10 || r2>250))//丢弃无用数据
+				{
+					continue;
+				}
+				if (r2-r1 >= 12)
+				{
+					jumpPointRight.push_back(i);
+				}
+				if (r1 - r2 >= 12) {
+					jumpPointLeft.push_back(i + 2);
+
+				}
+			}
+			sort(jumpPointRight.begin(), jumpPointRight.end());
+			sort(jumpPointLeft.begin(), jumpPointLeft.end());
+
+			//在两个vec中筛选出TC线
+			vector<vector<int>> tcRange;
+			for (int i = 0; i < jumpPointLeft.size(); i++)
+			{
+				for (int j = 0; j < jumpPointRight.size(); j++)
+				{
+					if ((jumpPointRight[j] - jumpPointLeft[i]>4)&&(jumpPointRight[j] - jumpPointLeft[i]<20)) {
+						vector<int> tempVec;
+						tempVec.push_back(jumpPointLeft[i]);
+						tempVec.push_back(jumpPointRight[j]);
+						tcRange.push_back(tempVec);
+					}
+				}
+			}
+			//如果筛选出多个 则只取中间的两条线
+			if (tcRange.size()>2)
+			{
+				vector<vector<int>> deleteVec;
+				//过滤重复
+				for (int i = 0; i < tcRange.size(); i++)
+				{
+					for (int j = i+1; j < tcRange.size(); j++)
+					{
+						if (checkIsIntersect(tcRange[i], tcRange[j]))
+						{
+							if ((tcRange[i][1]- tcRange[i][0])>=(tcRange[j][1] - tcRange[j][0]))
+							{
+								deleteVec.push_back(tcRange[i]);
+							}
+							else
+							{
+								deleteVec.push_back(tcRange[j]);
+							}
+						}
+
+					}
+				}
+				for (int i = 0; i < deleteVec.size(); i++)
+				{
+					tcRange.erase(remove(tcRange.begin(), tcRange.end(), deleteVec[i]), tcRange.end()); //删除vec中值为vec[i]的元素
+				}
+
+				int centerWidth = imageWidth / 2;
+				int minIndex = -1;
+				int secMinIndex = -1;
+				int minValue = 9999;
+				int secMinValue = 9999;
+				for (int i = 0; i < tcRange.size(); i++)
+				{
+					int temp = tcRange[i][0] + tcRange[i][0];
+					if (temp< minValue)
+					{
+						minValue = temp;
+						minIndex = i;
+					}
+					if (temp < secMinValue && temp != minValue)
+					{
+						secMinValue = temp;
+						secMinIndex = i;
+					}
+				}
+				vector<vector<int>> tempTCRange;
+				tempTCRange.push_back(tcRange[minIndex]);
+				tempTCRange.push_back(tcRange[secMinIndex]);
+				tcRange = tempTCRange;
+				sort(tcRange.begin(), tcRange.end());
+			}
+			else if (tcRange.size() == 1) {
+				int returnValue = 1;
+				printf("1 阴");
+				return returnValue;
+			}
+
+			int tLeft = 0;
+			int tRight = 0;
+			int cLeft = 0;
+			int cRight = 0;
+			if (tcRange[0][0]< tcRange[1][0])
+			{
+				tLeft = tcRange[0][0];
+				tRight = tcRange[0][1];
+				cLeft = tcRange[1][0];
+				cRight = tcRange[1][1];
+			}
+			else
+			{
+				tLeft = tcRange[1][0];
+				tRight = tcRange[1][1];
+				cLeft = tcRange[0][0];
+				cRight = tcRange[0][1];
+			}
+			//将其他地方的列清0
+			for (int i = 0; i < imageHeight; i++)
+			{
+				for (int j = 0; j < imageWidth; j++)
+				{
+					if (j< tLeft||(j>tRight&&j<cLeft)||j>cRight)
+					{
+						*(oneHotMatrix[i][j]) = 0;
+					}
+				}
+			}
+			drawImg(imageHeight, imageWidth, oneHotMatrix);
 			//printf("总共有%d行，%d列", imageHeight, imageWidth);
 			// 过滤图片中一些不符合条件的行
 			for (int i = 0; i < imageHeight; i++) {
@@ -1203,31 +1405,25 @@ extern "C" {
 					}
 				}
 				proportionOne = (float)lineOneCount / ((float)lineOneCount + (float)lineZeroCount);
-				if (proportionOne >= 0.05) {
+				if (proportionOne >= 0.01 && proportionOne<=0.85) {
 					heightValidLines.push_back(i);
 				}
 			}
-			heightValidList = filterVector(heightValidLines);
+			vector<int> tempHeightValidLines;
+			for (int i = heightValidLines[0]; i < heightValidLines[heightValidLines.size()-1]; i++)
+			{
+				tempHeightValidLines.push_back(i);
+			}
+			heightValidList.push_back(tempHeightValidLines);
 			// 过滤列
 			for (int j = 0; j < imageWidth; j++) { // 列单位
-				int colZeroCount = 0;
-				int colOneCount = 0;
-				float proportionOne = 0;
-				for (int k = 0; k < imageHeight; k++) {// 行单位
-					if (*(oneHotMatrix[k][j]) == 0) {
-						colZeroCount = colZeroCount + 1;
-					}
-					else {
-						colOneCount = colOneCount + 1;
-					}
-				}
-				proportionOne = (float)colOneCount / ((float)colOneCount + (float)colZeroCount);
-				if (proportionOne >= 0.1) { // 如果列中1的比例大于0.2 则进入候选的有效段
+				if ((j> tLeft && j < tRight) || (j > cLeft  && j < cRight)) { // 如果列中1的比例大于0.2 则进入候选的有效段
 					widthValidLines.push_back(j);
 				}
 			}
 			//将有效的列处理成连续集合的形式  [1,2,3,5,8,9,10] => [[1,2,3][5][8,9,10]]
 			widthValidList = filterVector(widthValidLines);
+
 
 			//----------将行跟列串成连续的数据块，并过滤出有效连续数据块-----------  [[[2,3][2,4][2,5][3,3]...]]
 			//获取最初始的vec块
@@ -1243,45 +1439,15 @@ extern "C" {
 							vec1.push_back(vec2);
 						}
 					}
-					//if (checkVecValidBySemiQuan(vec1, oneHotMatrix)) {
-					vec.push_back(vec1);
-					//}
+					if (checkVecValidBySemiQuan(vec1, oneHotMatrix)) {
+						vec.push_back(vec1);
+					}
 				}
 			}
-			if (vec.size() < 1) {
-				int returnValue = -2;
-				printf("-2 图片不清晰，请重拍");
+			if (vec.size() <= 1) {
+				int returnValue = 1;
+				printf("1 阴");
 				return returnValue;
-			}
-
-			// 将连续数据块中整行的0过滤掉
-			for (int i = vec.size() - 1; i >= 0; i--) {
-				if (vec[i].size() == 0)
-				{
-					vec.erase(remove(vec.begin(), vec.end(), vec[i]), vec.end()); //删除vec中值为vec[i]的元素
-					continue;
-				}
-				int heightIndexBegin = vec[i][0][0];
-				int heightIndexEnd = vec[i][(vec[i].size() - 1)][0];
-				int widthIndexBegin = vec[i][0][1];
-				int widthIndexEnd = vec[i][(vec[i].size() - 1)][1];
-				int eachWidth = widthIndexEnd - widthIndexBegin + 1; //每行有多少个元素
-				for (int j = heightIndexEnd; j >= heightIndexBegin; j--) { //行
-					bool flagWidth = true;//如果全部为0 则在vec中删除对应行
-					for (int k = widthIndexEnd; k >= widthIndexBegin; k--) { //列
-						if (*(oneHotMatrix[j][k]) == 1) {
-							flagWidth = false;
-							break;
-						}
-					}
-					if (flagWidth == true) {
-						//执行删除vec中对应行的操作
-						for (int k = widthIndexEnd; k >= widthIndexBegin; k--) { //列
-							int deleteIndex = ((j - heightIndexBegin) * eachWidth) + (k - widthIndexBegin);//获取要删除的元素对应的vec[i]中对应第几个
-							vec[i].erase(remove(vec[i].begin(), vec[i].end(), vec[i][deleteIndex]), vec[i].end()); //删除vec中值为vec[i]的元素
-						}
-					}
-				}
 			}
 
 			//清除大小为0的块
@@ -1294,120 +1460,99 @@ extern "C" {
 				}
 			}
 
-			// 将连续数据块中整列的0过滤掉
-			for (int i = vec.size() - 1; i >= 0; i--) {
-				int heightIndexBegin = vec[i][0][0];
-				int heightIndexEnd = vec[i][(vec[i].size() - 1)][0];
-				int widthIndexBegin = vec[i][0][1];
-				int widthIndexEnd = vec[i][(vec[i].size() - 1)][1];
-				int eachWidth = widthIndexEnd - widthIndexBegin + 1; //每列有多少个元素
-				for (int k = widthIndexEnd; k > widthIndexBegin; k--) { //列
-					//如果全部为0 则在vec中删除对应列
-					int oneColCount = 0;
-					for (int j = heightIndexEnd; j >= heightIndexBegin; j--) { //行
-						if (*(oneHotMatrix[j][k]) == 1) {
-							oneColCount = oneColCount + 1;
-						}
-					}
-					if (float(float(oneColCount) / float(eachWidth)) < 0.2){
-						//执行删除vec中对应行的操作
-						for (int j = heightIndexEnd; j >= heightIndexBegin; j--) {
-							int deleteIndex = ((j - heightIndexBegin) * eachWidth) + (k - widthIndexBegin);//获取要删除的元素对应的vec[i]中对应第几个
-							vec[i].erase(remove(vec[i].begin(), vec[i].end(), vec[i][deleteIndex]), vec[i].end()); //删除vec中值为vec[i]的元素
-						}
-						eachWidth = eachWidth - 1;
-					}
-				}
-			}
-
-			drawImg(imageHeight, imageWidth, oneHotMatrix);
-
-			if (vec.size() < 1) {
-				int returnValue = -2;
-				printf("-2 图片不清晰，请重拍");
+			if (vec.size() <= 1) {
+				int returnValue = 1;
+				printf("1 阴");
 				return returnValue;
 			}
 
 			//两两对比 找到一对相似度高的区域块 同时排除最大的那块 标记为1的数量小于总像素块数量的2％
 			vector<vector<int>> vecMatchPairs;  // [[1,2][5,6]]
-			for (int i = 0; i < vec.size() - 1; i++) {
-				int countOne_i = 0;//获取该数据块总共有多少个1
-				int countOneHeight_i = 0;//	获取该数据块总共含有1的行数有几个
-				int countOneWidth_i = 0;//	获取该数据块总共含有1的列数有几个
-				//	计算数据块总共有多少个1
-				vector<int> usedHeightNums_i;
-				vector<int> usedWidthNums_i;
-				for (int o = 0; o < vec[i].size(); o++) {
-					if (*(oneHotMatrix[vec[i][o][0]][vec[i][o][1]]) == 1) {
-						countOne_i = countOne_i + 1;
-						if (!isContainVec(usedHeightNums_i, vec[i][o][0])) {
-							usedHeightNums_i.push_back(vec[i][o][0]);
-							countOneHeight_i = countOneHeight_i + 1;
-						}
-						if (!isContainVec(usedWidthNums_i, vec[i][o][1])) {
-							usedWidthNums_i.push_back(vec[i][o][1]);
-							countOneWidth_i = countOneWidth_i + 1;
-						}
-					}
-				}
-
-				for (int j = i + 1; j < vec.size(); j++) {
-					int countOne_j = 0;//获取该数据块总共有多少个1
-					int countOneHeight_j = 0;//获取该数据块总共含有1的行数有几个
-					int countOneWidth_j = 0;//获取该数据块总共含有1的列数有几个
-					bool flagTotalCount = false; //判断总数是否符合
-					bool flagTotalRow = false; //判断行数是否符合
-					bool flagTotalCol = false; //判断列数是否符合
-					bool flagRowMatch = false; //判断列数是否重合
-					//计算数块总共有多少个1
-					vector<int> usedHeightNums_j;
-					vector<int> usedWidthNums_j;
-					for (int o = 0; o < vec[j].size(); o++) {
-						if (*(oneHotMatrix[vec[j][o][0]][vec[j][o][1]]) == 1) {
-							countOne_j = countOne_j + 1;
-							if (!isContainVec(usedHeightNums_j, vec[j][o][0])) {
-								usedHeightNums_j.push_back(vec[j][o][0]);
-								countOneHeight_j = countOneHeight_j + 1;
-							}
-							if (!isContainVec(usedWidthNums_j, vec[j][o][1])) {
-								usedWidthNums_j.push_back(vec[j][o][1]);
-								countOneWidth_j = countOneWidth_j + 1;
-							}
-						}
-					}
-
-					//判断总数是否符合
-					if (float(float(countOne_i) / float(countOne_j)) >= 0.4 and (float(countOne_i) / float(countOne_j)) <= 2.5) {
-						flagTotalCount = true;
-					}
-					//判断行数是否符合
-					if (float(float(countOneHeight_i) / float(countOneHeight_j)) >= 0.8 and (float(countOneHeight_i) / float(countOneHeight_j)) <= 1.2) {
-						flagTotalRow = true;
-					}
-					//判断列数是否符合
-					if (float(float(countOneWidth_i) / float(countOneWidth_j)) >= 0.33 and (float(countOneWidth_i) / float(countOneWidth_j)) <= 2) {
-						flagTotalCol = true;
-					}
-					//判断行数是否重合
-					if (
-						(vec[i][0][0] <= vec[j][0][0] && vec[i][vec[i].size() - 1][0] >= vec[j][vec[j].size() - 1][0]) ||
-						(vec[i][0][0] <= vec[j][0][0] && vec[i][vec[i].size() - 1][0] <= vec[j][vec[j].size() - 1][0]) ||
-						(vec[i][0][0] >= vec[j][0][0] && vec[i][vec[i].size() - 1][0] <= vec[j][vec[j].size() - 1][0]) ||
-						(vec[i][0][0] >= vec[j][0][0] && vec[i][vec[i].size() - 1][0] >= vec[j][vec[j].size() - 1][0])
-					){
-						flagRowMatch = true;
-					}
-
-					if (flagTotalCount && flagTotalRow && flagTotalCol&& flagRowMatch) {
-						vector<int > vecMatchPair; //记录
-						vecMatchPair.push_back(i);
-						vecMatchPair.push_back(j);
-						vecMatchPairs.push_back(vecMatchPair);
-					}
-				}
+			vector<int> tempVecMatch;
+			for (size_t i = 0; i < vec.size(); i++)
+			{
+				tempVecMatch.push_back(i);
 			}
 
+			vecMatchPairs.push_back(tempVecMatch);
+
+			//for (int i = 0; i < vec.size() - 1; i++) {
+			//	int countOne_i = 0;//获取该数据块总共有多少个1
+			//	int countOneHeight_i = 0;//	获取该数据块总共含有1的行数有几个
+			//	int countOneWidth_i = 0;//	获取该数据块总共含有1的列数有几个
+			//	//	计算数据块总共有多少个1
+			//	vector<int> usedHeightNums_i;
+			//	vector<int> usedWidthNums_i;
+			//	for (int o = 0; o < vec[i].size(); o++) {
+			//		if (*(oneHotMatrix[vec[i][o][0]][vec[i][o][1]]) == 1) {
+			//			countOne_i = countOne_i + 1;
+			//			if (!isContainVec(usedHeightNums_i, vec[i][o][0])) {
+			//				usedHeightNums_i.push_back(vec[i][o][0]);
+			//				countOneHeight_i = countOneHeight_i + 1;
+			//			}
+			//			if (!isContainVec(usedWidthNums_i, vec[i][o][1])) {
+			//				usedWidthNums_i.push_back(vec[i][o][1]);
+			//				countOneWidth_i = countOneWidth_i + 1;
+			//			}
+			//		}
+			//	}
+			//	for (int j = i + 1; j < vec.size(); j++) {
+			//		int countOne_j = 0;//获取该数据块总共有多少个1
+			//		int countOneHeight_j = 0;//获取该数据块总共含有1的行数有几个
+			//		int countOneWidth_j = 0;//获取该数据块总共含有1的列数有几个
+			//		bool flagTotalCount = false; //判断总数是否符合
+			//		bool flagTotalRow = false; //判断行数是否符合
+			//		bool flagTotalCol = false; //判断列数是否符合
+			//		bool flagRowMatch = false; //判断列数是否重合
+			//		//计算数块总共有多少个1
+			//		vector<int> usedHeightNums_j;
+			//		vector<int> usedWidthNums_j;
+			//		for (int o = 0; o < vec[j].size(); o++) {
+			//			if (*(oneHotMatrix[vec[j][o][0]][vec[j][o][1]]) == 1) {
+			//				countOne_j = countOne_j + 1;
+			//				if (!isContainVec(usedHeightNums_j, vec[j][o][0])) {
+			//					usedHeightNums_j.push_back(vec[j][o][0]);
+			//					countOneHeight_j = countOneHeight_j + 1;
+			//				}
+			//				if (!isContainVec(usedWidthNums_j, vec[j][o][1])) {
+			//					usedWidthNums_j.push_back(vec[j][o][1]);
+			//					countOneWidth_j = countOneWidth_j + 1;
+			//				}
+			//			}
+			//		}
+			//		//判断总数是否符合
+			//		if (float(float(countOne_i) / float(countOne_j)) >= 0.4 and (float(countOne_i) / float(countOne_j)) <= 2.5) {
+			//			flagTotalCount = true;
+			//		}
+			//		//判断行数是否符合
+			//		if (float(float(countOneHeight_i) / float(countOneHeight_j)) >= 0.8 and (float(countOneHeight_i) / float(countOneHeight_j)) <= 1.2) {
+			//			flagTotalRow = true;
+			//		}
+			//		//判断列数是否符合
+			//		if (float(float(countOneWidth_i) / float(countOneWidth_j)) >= 0.33 and (float(countOneWidth_i) / float(countOneWidth_j)) <= 2) {
+			//			flagTotalCol = true;
+			//		}
+			//		//判断行数是否重合
+			//		if (
+			//			(vec[i][0][0] <= vec[j][0][0] && vec[i][vec[i].size() - 1][0] >= vec[j][vec[j].size() - 1][0]) ||
+			//			(vec[i][0][0] <= vec[j][0][0] && vec[i][vec[i].size() - 1][0] <= vec[j][vec[j].size() - 1][0]) ||
+			//			(vec[i][0][0] >= vec[j][0][0] && vec[i][vec[i].size() - 1][0] <= vec[j][vec[j].size() - 1][0]) ||
+			//			(vec[i][0][0] >= vec[j][0][0] && vec[i][vec[i].size() - 1][0] >= vec[j][vec[j].size() - 1][0])
+			//		){
+			//			flagRowMatch = true;
+			//		}
+			//		if (flagTotalCount && flagTotalRow && flagTotalCol&& flagRowMatch) {
+			//			vector<int > vecMatchPair; //记录
+			//			vecMatchPair.push_back(i);
+			//			vecMatchPair.push_back(j);
+			//			vecMatchPairs.push_back(vecMatchPair);
+			//		}
+			//	}
+			//}
+
+			//画出向量的01矩阵 耗时太大
 			//drawVec(imageHeight, imageWidth, oneHotMatrix,vec);
+
 			if (vecMatchPairs.size() >= 1) {
 
 				//如果找到匹配度存在多块相似块 则取平均大小最大的那块，因为实际情况下图像存在很小小块的杂块影响了判断
@@ -1453,13 +1598,10 @@ extern "C" {
 				vector<vector<int>> vecBlockC = vec[blockC];
 				vector<vector<int>> vecBlockT = vec[blockT];
 				// 精确到每个点
-				float vecBlockCHSum = 0;
-				float vecBlockCHAvg = 0;
-				float vecBlockTHSum = 0;
-				float vecBlockTHAvg = 0;
+				float vecBlockCRSum = 0;
+				float vecBlockCRAvg = 0;
 				float vecBlockTRSum = 0;//rgb中r的总值
 				float vecBlockTRAvg = 0;
-
 
 				//通过rgb中的r的值进行计算
 				for (int l = 0; l < vecBlockT.size(); l++) {
@@ -1469,36 +1611,41 @@ extern "C" {
 					vecBlockTRSum = vecBlockTRSum + r;
 				}
 				vecBlockTRAvg = vecBlockTRSum / float(vecBlockT.size());
+				//通过rgb中的r的值进行计算
+				for (int l = 0; l < vecBlockC.size(); l++) {
+					int indexHeight = vecBlockC[l][0];
+					int indexWidth = vecBlockC[l][1];
+					r = imageROI.at<Vec3b>(indexHeight, indexWidth)[2];
+					vecBlockCRSum = vecBlockCRSum + r;
+				}
+				vecBlockCRAvg = vecBlockCRSum / float(vecBlockC.size());
 
-				//根据HSV的色相差值 根据这个值定试纸检测结果
-				if (vecBlockTRAvg <= redLevel6) {
-					printf("6");
+
+				if (vecBlockTRAvg <= vecBlockCRAvg * 1.158) {
+					printf("6 强阳");
 					returnValue = 6;
 				}
-				else if (vecBlockTRAvg <= redLevel5) {
-					printf("5");
+				else if (vecBlockTRAvg <= vecBlockCRAvg * 1.192) {
+					printf("5 弱阳");
 					returnValue = 5;
 				}
-				else if (vecBlockTRAvg <= redLevel4) {
-					printf("4");
+				else if (vecBlockTRAvg <= vecBlockCRAvg * 1.488) {
+					printf("4 弱阳");
 					returnValue = 4;
 				}
-				else if (vecBlockTRAvg <= redLevel3) {
-					printf("3");
+				else if (vecBlockTRAvg <= vecBlockCRAvg * 1.78) {
+					printf("3 弱阳");
 					returnValue = 3;
 				}
-				else if (vecBlockTRAvg <= redLevel2) {
-					printf("2");
+				else if (vecBlockTRAvg <= vecBlockCRAvg * 1.866) {
+					printf("2 弱阳");
 					returnValue = 2;
 				}
-				else if (vecBlockTRAvg <= redLevel1) {
-					printf("1");
-					returnValue = 1;
-				}
 				else {
-					printf("1 ");
+					printf("1 阴");
 					returnValue = 1;
 				}
+
 				printf("vecBlockTRAvg：%f", vecBlockTRAvg);
 			}
 			else if (vecMatchPairs.size() == 0) {
@@ -1513,12 +1660,12 @@ extern "C" {
 				}
 				else {
 					//检测到多个色素块，但是没有相似块，此时判断失败
-					printf("-5 检测到多个色素块，但是没有相似块，请重拍");
+					printf("-5 检测失败");
 					returnValue = -5;
 				}
 			}
 			else {
-				printf("-6 存在多个相似块 无法进行检测，请到干净的背景中重拍");
+				printf("-6 检测失败，请到干净的背景中重拍");
 				returnValue = -6;
 			}
 			free(HSVArr);
@@ -1529,6 +1676,7 @@ extern "C" {
 			return -99;
 		}
 	}
+
 
 
 }
