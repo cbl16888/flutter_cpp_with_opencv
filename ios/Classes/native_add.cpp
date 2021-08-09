@@ -1366,6 +1366,11 @@ extern "C" {
 				printf("1 阴");
 				return returnValue;
 			}
+			else if (tcRange.size() == 0) {
+				int returnValue = -7;
+				printf("-7 没有检测到有效试纸 请重拍");
+				return returnValue;
+			}
 
 			int tLeft = 0;
 			int tRight = 0;
@@ -1417,6 +1422,11 @@ extern "C" {
 				}
 			}
 			vector<int> tempHeightValidLines;
+			if (heightValidLines.size() <= 0) {
+				int returnValue = -7;
+				printf("-7 没有检测到有效试纸 请重拍");
+				return returnValue;
+			}
 			for (int i = heightValidLines[0]; i < heightValidLines[heightValidLines.size()-1]; i++)
 			{
 				tempHeightValidLines.push_back(i);
