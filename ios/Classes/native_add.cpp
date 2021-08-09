@@ -488,8 +488,9 @@ bool checkIsIntersect(vector<int> vec1, vector<int> vec2)
 	if ((vec1[0] <= vec2[0] && vec1[1] >= vec2[0] && vec1[1] <= vec2[1]) ||
 		(vec1[0] >= vec2[0] && vec1[0] <= vec2[1] && vec1[1] >= vec2[1]) ||
 		(vec1[0] <= vec2[0] && vec1[1] >= vec2[1]) ||
-		(vec1[0] >= vec2[0] && vec1[0] <= vec2[1] && vec1[1] <= vec2[1]) ||
-		vec1[0] == vec2[0] || vec1[1] == vec2[0] || vec1[0] == vec2[0] || vec1[1] == vec2[1]) {
+		(vec1[0] >= vec2[0] && vec1[0] <= vec2[1] && vec1[1] <= vec2[1])
+		//|| vec1[0] == vec2[0] || vec1[1] == vec2[0] || vec1[0] == vec2[0] || vec1[1] == vec2[1]
+		) {
 		return true;
 	}
 	else {
@@ -1180,6 +1181,7 @@ extern "C" {
 
 
 	__attribute__((visibility("default"))) __attribute__((used))
+	//处理半定量试纸
 	int process_semi_quan_image(char* fileUrl) {
 		try {
 			IplImage* imageOriginal = cvLoadImage(fileUrl);
@@ -1199,8 +1201,8 @@ extern "C" {
 
 
 
-			imshow("感兴趣区域", imageROI);
-			waitKey();
+			/*imshow("感兴趣区域", imageROI);
+			waitKey();*/
 
 
 			CvScalar scalar;
@@ -1259,7 +1261,7 @@ extern "C" {
 			vector<int> jumpPointLeft;
 			vector<int> jumpPointRight;
 			int jumpValue = 0;
-			for (int i = imageWidth - 3; i>0 ; i=i-2)
+			for (int i = imageWidth - 3; i>0 ; i=i-1)
 			{
 				int r1 = 0;
 				int r2 = 0;
@@ -1275,11 +1277,11 @@ extern "C" {
 				{
 					continue;
 				}
-				if (r2-r1 >= 12)
+				if (r2-r1 >= 10)
 				{
 					jumpPointRight.push_back(i);
 				}
-				if (r1 - r2 >= 12) {
+				if (r1 - r2 >= 10) {
 					jumpPointLeft.push_back(i + 2);
 
 				}
@@ -1288,12 +1290,12 @@ extern "C" {
 			sort(jumpPointLeft.begin(), jumpPointLeft.end());
 
 			//在两个vec中筛选出TC线
-			vector<vector<int>> tcRange;
+	 		vector<vector<int>> tcRange;
 			for (int i = 0; i < jumpPointLeft.size(); i++)
 			{
 				for (int j = 0; j < jumpPointRight.size(); j++)
 				{
-					if ((jumpPointRight[j] - jumpPointLeft[i]>4)&&(jumpPointRight[j] - jumpPointLeft[i]<20)) {
+					if ((jumpPointRight[j] - jumpPointLeft[i]>=4)&&(jumpPointRight[j] - jumpPointLeft[i]<20)) {
 						vector<int> tempVec;
 						tempVec.push_back(jumpPointLeft[i]);
 						tempVec.push_back(jumpPointRight[j]);
@@ -1348,6 +1350,11 @@ extern "C" {
 						secMinIndex = i;
 					}
 				}
+				if (tcRange.size() == 1) {
+					int returnValue = 1;
+					printf("1 阴");
+					return returnValue;
+				}
 				vector<vector<int>> tempTCRange;
 				tempTCRange.push_back(tcRange[minIndex]);
 				tempTCRange.push_back(tcRange[secMinIndex]);
@@ -1389,7 +1396,7 @@ extern "C" {
 					}
 				}
 			}
-			drawImg(imageHeight, imageWidth, oneHotMatrix);
+			//drawImg(imageHeight, imageWidth, oneHotMatrix);
 			//printf("总共有%d行，%d列", imageHeight, imageWidth);
 			// 过滤图片中一些不符合条件的行
 			for (int i = 0; i < imageHeight; i++) {
