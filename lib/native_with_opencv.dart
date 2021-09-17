@@ -28,15 +28,15 @@ final _ProcessImageFunc _processSemiQuanImage = nativeAddLib
     .asFunction();
 
 String opencvVersion() {
-    return Utf8.fromUtf8(_version());
+    return _version().toDartString();
 }
 
 int processImage(ProcessImageArguments args) {
     if (args.type == 0) {
-        var result = _processImage(Utf8.toUtf8(args.inputPath));
+        var result = _processImage(args.inputPath.toNativeUtf8());
         return result;
     } else {
-        var result = _processSemiQuanImage(Utf8.toUtf8(args.inputPath));
+        var result = _processSemiQuanImage(args.inputPath.toNativeUtf8());
         return result;
     }
 }
