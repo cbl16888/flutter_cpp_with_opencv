@@ -1,7 +1,6 @@
 import 'dart:ffi';// For FFI
 import 'dart:io'; // For Platform.isX
 import 'package:ffi/ffi.dart';
-import 'dart:isolate';
 
 // C function signatures
 typedef _version_func = Pointer<Utf8> Function();

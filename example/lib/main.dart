@@ -7,7 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:native_with_opencv/native_with_opencv.dart';
 
-Directory tempDir;
+late Directory tempDir;
 String get tempPath => '${tempDir.path}/temp.jpg';
 
 void main() {
@@ -69,7 +69,7 @@ class _MyHomePageState extends State<MyHomePage> {
     });
 
     // Making a variable to store a subscription in
-    StreamSubscription sub;
+    StreamSubscription? sub;
 
     // Listeting for messages on port
     sub = port.listen((_) async {
